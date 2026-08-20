@@ -40,6 +40,17 @@
   .box{border:1px solid var(--line);border-radius:10px;padding:1.3rem 1.4rem;margin:2.5rem 0}
   .box h2{margin-top:0}
   footer{margin:3rem 0 4rem;padding-top:1.3rem;border-top:1px solid var(--line);color:var(--soft);font-size:.92rem}
+  .calc{border:2px solid var(--brand);border-radius:10px;padding:1.3rem 1.4rem;margin:1.5rem 0}
+  .calc label{display:block;font-weight:700;margin-bottom:.4rem}
+  .calc input[type=date]{font:inherit;padding:.6rem .7rem;border:2px solid var(--line);border-radius:8px;min-height:48px;width:100%;max-width:20rem}
+  .calc fieldset{border:0;padding:1rem 0 0;margin:0}
+  .calc legend{font-weight:700;padding:0}
+  .calc label.r{font-weight:400;margin:.5rem 0 0;display:flex;gap:.55rem;align-items:flex-start}
+  .calc input[type=radio]{margin-top:.45rem;width:1.15rem;height:1.15rem}
+  #out{margin:1.1rem 0 0;padding:.9rem 1.1rem;border-radius:8px;background:var(--bg-alt);font-size:1.05rem}
+  #out.ok{background:#e8f3ec;border-left:5px solid #1d6f42}
+  #out.warn{background:#fdecea;border-left:5px solid var(--warn)}
+  .calc .small{font-size:.88rem;color:var(--soft);margin:.9rem 0 0}
   .disclaimer{font-size:.9rem;color:var(--soft);background:var(--bg-alt);padding:1rem 1.2rem;border-radius:8px;margin-top:1.5rem}
 </style>
 
@@ -137,6 +148,58 @@
 <p>Note the two halves. It is easy to remember &ldquo;75 percent&rdquo; and forget that the non-ad valorem assessments have to be paid in <em>full</em>.</p>
 
 <p>This one is brutal because of when it lands. You file in August, you wait months, you go to a hearing, and the thing that ends it is a payment deadline in the following spring that nobody mentioned. <strong>Filing a petition is not a reason to stop paying the bill.</strong></p>
+
+<h2>Work out your own deadline</h2>
+
+<p>Take the mailing date printed on your notice and put it in here. Nothing is sent anywhere and nothing is stored; the arithmetic happens in your browser.</p>
+
+<div class="calc">
+  <label for="mailed">Date printed on your notice as the mailing date</label>
+  <input type="date" id="mailed">
+  <fieldset>
+    <legend>What are you challenging?</legend>
+    <label class="r"><input type="radio" name="kind" value="25" checked> The <strong>value</strong> of my property (25 days)</label>
+    <label class="r"><input type="radio" name="kind" value="30"> A <strong>denied exemption</strong> or classification (30 days)</label>
+  </fieldset>
+  <p id="out" role="status" aria-live="polite">Enter the mailing date above.</p>
+  <p class="small">This counts calendar days from the mailing date, which is what Statute 194.011(3)(d) says. It does not know your county's holidays or its filing hours, and it is not legal advice. Confirm the date with your county before you rely on it.</p>
+</div>
+
+<script>
+(function () {
+  var d = document.getElementById('mailed'), out = document.getElementById('out');
+  function run() {
+    if (!d.value) { out.className = ''; out.textContent = 'Enter the mailing date above.'; return; }
+    var days = +document.querySelector('input[name=kind]:checked').value;
+    var parts = d.value.split('-');
+    var due = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+    due.setDate(due.getDate() + days);
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var left = Math.round((due - today) / 86400000);
+    var pretty = due.toLocaleDateString('en-US',
+      { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    if (left > 0) {
+      out.className = 'ok';
+      out.innerHTML = 'Your deadline is <strong>' + pretty + '</strong>. That is <strong>' +
+        left + (left === 1 ? ' day' : ' days') + '</strong> from today.';
+    } else if (left === 0) {
+      out.className = 'warn';
+      out.innerHTML = 'Your deadline is <strong>today</strong>, ' + pretty +
+        '. File today or it is gone.';
+    } else {
+      out.className = 'warn';
+      out.innerHTML = 'That window closed on <strong>' + pretty + '</strong>, ' + (-left) +
+        (left === -1 ? ' day' : ' days') + ' ago. A petition about value is late, and a ' +
+        'denied exemption runs on its own separate 30 day clock from its own notice. ' +
+        'Call your county before assuming nothing can be done.';
+    }
+  }
+  d.addEventListener('input', run);
+  [].forEach.call(document.querySelectorAll('input[name=kind]'), function (r) {
+    r.addEventListener('change', run);
+  });
+})();
+</script>
 
 <h2>What to do this week</h2>
 
