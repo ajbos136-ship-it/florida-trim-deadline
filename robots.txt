@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ajbos136-ship-it.github.io/florida-trim-deadline/sitemap.xml
